@@ -40,7 +40,7 @@ It listens from your microphone, transcribes speech with Whisper, retrieves rele
 ## Quick Setup
 
 ```powershell
-git clone <your-repo-url>
+git clone https://github.com/ryan1604/voice-ai-agent
 cd vai
 uv sync
 uv run voice_ai.py

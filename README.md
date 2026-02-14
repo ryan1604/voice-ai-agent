@@ -4,6 +4,30 @@ A local, voice-driven AI assistant built around `voice_ai.py`.
 
 It listens from your microphone, transcribes speech with Whisper, retrieves relevant local knowledge (RAG), queries a local LLM through LM Studio, and speaks responses back with Kokoro TTS.
 
+## High-Level Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Speaks into Mic] --> B[Audio Capture]
+    B --> C[Faster-Whisper Transcription]
+    C --> D{Check Command}
+    D -->|quit/exit/stop| E[End Program]
+    D -->|print info| F[Read info.txt]
+    F --> G[Display Info to User]
+    G --> A
+    D -->|add info| H[Append to info.txt]
+    H --> A
+    D -->|delete info| I[Clear info.txt]
+    I --> A
+    D -->|Normal Query| J[RAG - Retrieve Relevant Context]
+    J --> L[Combine Context + Query]
+    L --> M[LLM Processing]
+    M --> N[Generate Response]
+    N --> O[KokoroTTS - Text to Audio]
+    O --> P[Play Audio to User]
+    P --> A
+```
+
 ## Features
 
 - Real-time microphone capture with simple Voice Activity Detection (VAD) (stop on silence)

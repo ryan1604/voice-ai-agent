@@ -28,6 +28,62 @@ graph TD
     P --> A
 ```
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant MIC as Mic/VAD
+    participant STT as faster_whisper
+    participant CMD as Command Router
+    participant RAG as Embedder+FAISS
+    participant LLM as LM Studio
+    participant TTS as Kokoro
+    participant FS as knowledge/info.txt
+
+    Note over MIC,RAG: Startup: load whisper, kokoro, embedder, docs, chunk, embed, build FAISS, init conversation
+
+    loop Main loop
+        U->>MIC: Speak
+        MIC->>MIC: listen_until_silence()
+        MIC->>STT: temp wav
+        STT-->>CMD: user_text
+
+        alt quit/exit/stop
+            CMD-->>U: Exit program
+        else add info
+            CMD->>MIC: Capture second utterance
+            MIC->>STT: temp wav
+            STT-->>CMD: text_to_add
+            CMD->>FS: Append info.txt
+            CMD->>RAG: Reload docs and rebuild FAISS
+            CMD-->>U: Info added
+        else delete info
+            CMD-->>U: Ask y/n confirmation
+            alt yes
+                CMD->>FS: Delete info.txt if exists
+                CMD->>RAG: Reload docs and rebuild FAISS
+                CMD-->>U: Info deleted
+            else no
+                CMD-->>U: Deletion cancelled
+            end
+        else print info
+            CMD->>FS: Read info.txt
+            FS-->>CMD: file contents
+            CMD-->>U: Print contents
+        else normal query
+            CMD->>RAG: retrieve_context(query)
+            RAG-->>CMD: top_k context
+            CMD->>LLM: chat/completions(messages + context)
+            LLM-->>CMD: assistant_text
+            CMD->>TTS: generate and play audio
+            TTS-->>U: Spoken response
+        end
+    end
+
+```
+
 ## Features
 
 - Real-time microphone capture with simple Voice Activity Detection (VAD) (stop on silence)
